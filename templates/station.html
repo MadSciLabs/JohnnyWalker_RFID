@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Johnny Walker Drink RFID</title>
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script type="text/javascript" src="http://api.jquery.com/resources/events.js"></script>
+
+  <script>
+  var TYPE = "{{ type.lower }}";
+
+  var timerHandle;
+
+  var asciiCode = "";
+  var bReceive = true;
+  var lastAsciiCode = "last";
+
+  function capitaliseFirstLetter(string)
+  {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  function showReset()
+  {
+    $("#box").removeClass();
+    $("#box").text("Swipe RFID");
+  }
+
+  function showWait()
+  {
+    $("#box").removeClass();
+    $("#box").addClass("wait");
+    $("#box").text("Submitting ...");
+  }
+
+  function showResponse(_r)
+  {
+     $("#box").removeClass();
+     if (_r == "1")
+     {
+       $("#box").addClass("no");
+       $("#box").text("NO");
+     }
+     else
+     {
+       $("#box").addClass("yes");
+       $("#box").text("YES");
+     }
+     $("#list").append(asciiCode + " " + _r + "<br>");
+
+     timerHandle = setTimeout(function() {
+       showReset(); 
+     }, 2000);
+  }
+
+  function resetCode()
+  {
+    console.log("ascii : " + asciiCode + " last : " + lastAsciiCode);
+    asciiCode = "";
+    bReceive = true;
+  }
+
+  $(document).ready(function(){
+    $("#keys").focus();
+
+    $("#keys").blur(function() {
+      $("#keys").focus();
+    });
+
+  });
+
+  $(document).keydown(function(event) {
+
+  if (bReceive == true)
+  {
+
+    if (event.which == 13) {
+      
+      bReceive = false;
+
+      if (asciiCode.length == 10 && asciiCode != lastAsciiCode)
+      {
+        clearTimeout(timerHandle);
+        showWait();
+
+        console.log("Send: " + asciiCode + "-" + lastAsciiCode);
+  
+        //Send This
+        $.getJSON( "/jwrfid/" + asciiCode  + "/" + TYPE, {
+          format: "json"
+        })
+
+       .done(function(data) {
+
+          showResponse(data[0].r);
+
+          //console.log( data[0].r );
+          lastAsciiCode = asciiCode;
+
+          resetCode();
+        })
+        .fail(function() { console.log( "error" ); });
+
+      } else {
+
+        resetCode();
+      }
+
+    } else {
+
+      asciiCode += String.fromCharCode(event.which);
+    }
+  }
+  });
+  </script>
+
+  <style>
+
+    body {padding:0; margin:0; font-family:arial,helvetica,clean,terminal,sans-serif; font-size:12px; line-height:13px; color:#000000; border:0px;}
+
+    #keys {
+      visibility: hidden;
+    }
+
+    #frame {
+      position:relative;left:0px;width:100%;top:0px;
+      text-align:center;
+      align:center;
+    }
+
+    #box {
+      border-style:solid;
+      border-width: 3px;
+      width: 400px;
+      height: 120px;
+      font-size:60px;
+      text-align:center;
+      padding-top: 100px;
+    }
+
+    .yes {
+      background: #00dd00; 
+    }
+
+    .no {
+      background: #dd0000;
+    }
+
+    .wait {
+      background: #c9c9c9;
+    }
+
+    #list {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+    }
+
+    .title {
+      font-size: 60px;
+      line-height: 65px;
+      font-weight: bold;
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+<center>
+<input type="text" id="keys" />
+<div id="list">
+</div>
+
+<div class="title">Johnny Walker {{ type.upper }}</div>
+
+<div id="box">
+SWIPE RFID
+</div>
+</center>
+
+</body>
+</html>
