@@ -22,31 +22,35 @@
 
   function showReset()
   {
-    $("#box").removeClass();
+    //$("#box").removeClass();
+    $("#box").css("background-color","#ffffff"); 
     $("#box").text("Swipe RFID");
   }
 
   function showWait()
   {
-    $("#box").removeClass();
-    $("#box").addClass("wait");
+    //$("#box").removeClass();
+    //$("#box").addClass("wait");
+    $("#box").css("background-color","#aaaaaa"); 
     $("#box").text("Submitting ...");
   }
 
   function showResponse(_r)
   {
-     $("#box").removeClass();
+     //$("#box").removeClass();
      if (_r == "1")
      {
-       $("#box").addClass("no");
+       $("#box").css("background-color","#dd0000"); 
+       //$("#box").addClass("no");
        $("#box").text("NO");
      }
      else
      {
-       $("#box").addClass("yes");
+       $("#box").css("background-color","#00dd00"); 
+       //$("#box").addClass("yes");
        $("#box").text("YES");
      }
-     $("#list").append(asciiCode + " " + _r + "<br>");
+     //$("#list").append(asciiCode + " " + _r + "<br>");
 
      timerHandle = setTimeout(function() {
        showReset(); 
@@ -80,6 +84,7 @@
 
       if (asciiCode.length == 10 && asciiCode != lastAsciiCode)
       {
+        $("#keys").val("");
         clearTimeout(timerHandle);
         showWait();
 
@@ -119,7 +124,7 @@
     body {padding:0; margin:0; font-family:arial,helvetica,clean,terminal,sans-serif; font-size:12px; line-height:13px; color:#000000; border:0px;}
 
     #keys {
-      visibility: hidden;
+      //visibility: hidden;
     }
 
     #frame {
@@ -130,11 +135,12 @@
 
     #box {
       border-style:solid;
-      border-width: 3px;
-      width: 400px;
+      border-width: 1px;
+      width: 600px;
       height: 120px;
-      font-size:60px;
+      font-size:80px;
       text-align:center;
+      font-weight:bold;
       padding-top: 100px;
     }
 
@@ -169,7 +175,6 @@
 <body>
 
 <center>
-<input type="text" id="keys" />
 <div id="list">
 </div>
 
@@ -178,7 +183,15 @@
 <div id="box">
 SWIPE RFID
 </div>
+
 </center>
+
+<div style="position:relative">
+<input type="text" id="keys" />
+<div style="position:absolute; top:0px; left:0px; width:200px;height:100px; z-index:2; background:#ffffff" >
+</div>
+</div>
+
 
 </body>
 </html>
