@@ -14,6 +14,9 @@
   var asciiCode = "";
   var bReceive = true;
   var lastAsciiCode = "last";
+  var lastResponse = "";
+
+  var data;
 
   function capitaliseFirstLetter(string)
   {
@@ -41,14 +44,17 @@
      if (_r == "1")
      {
        $("#box").css("background-color","#dd0000"); 
-       //$("#box").addClass("no");
-       $("#box").text("NO");
+       $("#box").text("NO DRINK"); 
+     }
+     else if (_r == "-1")
+     {
+       $("#box").css("background-color","#aaaaaa"); 
+       $("#box").text("timeout");
      }
      else
      {
        $("#box").css("background-color","#00dd00"); 
-       //$("#box").addClass("yes");
-       $("#box").text("YES");
+       $("#box").text("DRINK");
      }
      //$("#list").append(asciiCode + " " + _r + "<br>");
 
@@ -82,29 +88,87 @@
       
       bReceive = false;
 
-      if (asciiCode.length == 10 && asciiCode != lastAsciiCode)
+      if (asciiCode.length == 10)
+      //if (asciiCode.length == 10 && asciiCode != lastAsciiCode)
       {
         $("#keys").val("");
         clearTimeout(timerHandle);
-        showWait();
-
-        console.log("Send: " + asciiCode + "-" + lastAsciiCode);
-  
-        //Send This
-        $.getJSON( "/jwrfid/" + asciiCode  + "/" + TYPE, {
-          format: "json"
-        })
-
-       .done(function(data) {
-
-          showResponse(data[0].r);
-
-          //console.log( data[0].r );
-          lastAsciiCode = asciiCode;
-
+     
+	//If this is the last card again 
+	if (asciiCode == lastAsciiCode)
+	{
+          showResponse(lastResponse);
           resetCode();
-        })
-        .fail(function() { console.log( "error" ); });
+	}
+	else
+	{
+          showWait();
+          console.log("Send: " + asciiCode + "-" + lastAsciiCode);
+
+      	  url = "/jwrfid/" + asciiCode  + "/" + TYPE; 
+
+	var request = $.ajax({
+    		dataType: "json",
+    		url: url,
+    		success: function(data) {
+
+console.log(url);
+console.log(data);
+
+	    		//SECRET CARDS 
+            		if (asciiCode == "4219521667" || asciiCode == "2722829187" ) {
+            			showResponse("0");
+	    		} else {
+            			showResponse(data[0].r);
+	    		}
+
+	    		lastResponse = data[0].r;
+            		lastAsciiCode = asciiCode;
+            		resetCode();
+
+		},
+    		timeout: 2000
+	}).fail( function( xhr, status ) {
+    		if( status == "timeout" ) {
+            		showResponse(-1);
+            		resetCode();
+    		}
+	})
+
+/* 
+          //Send This
+          p = $.getJSON( "/jwrfid/" + asciiCode  + "/" + TYPE, {
+            format: "json"
+          })
+          .done(function(data) {
+	  
+	    //SECRET CARDS 
+            if (asciiCode == "4219521667" || asciiCode == "2722829187" ) {
+            	showResponse("0");
+	    } else {
+            	showResponse(data[0].r);
+	    }
+
+	    lastResponse = data[0].r;
+            lastAsciiCode = asciiCode;
+
+            resetCode();
+          })
+          .fail(function() { 
+		console.log( "error" ); 
+	  });
+*/
+
+/*
+          //On timeout
+          setTimeout(function() { 
+            showResponse(-1);
+            resetCode();
+	    p.abort(); 
+	  }, 10000);
+*/
+
+	}
 
       } else {
 
@@ -188,7 +252,7 @@ SWIPE RFID
 
 <div style="position:relative">
 <input type="text" id="keys" />
-<div style="position:absolute; top:0px; left:0px; width:200px;height:100px; z-index:2; background:#ffffff" >
+<!--div style="position:absolute; top:0px; left:0px; width:200px;height:100px; z-index:2; background:#ffffff" -->
 </div>
 </div>
 
